@@ -1,3 +1,4 @@
+//src/features/auth/data/dataSources/authenticationSourceService.ts
 import { ILocalPreferences } from "@/src/core/iLocalPreferences";
 import { LocalPreferencesAsyncStorage } from "@/src/core/LocalPreferencesAsyncStorage";
 import { IauthSource } from "./IauthenticationSource";
@@ -29,10 +30,17 @@ export class AuthenticatioSourceService implements IauthSource {
 
       if (response.status === 201) {
         const data = await response.json();
+
         const token = data["accessToken"];
         const refreshToken = data["refreshToken"];
+        const userId = data["user"]["id"];
+        const emailUser = data["user"]["email"];
+
         await this.prefs.storeData("token", token);
         await this.prefs.storeData("refreshToken", refreshToken);
+        await this.prefs.storeData("userId", userId);
+        await this.prefs.storeData("email", emailUser);
+
         //console.log("Token:", token, "\nRefresh Token:", refreshToken);
         return Promise.resolve();
       } else {
@@ -95,9 +103,51 @@ export class AuthenticatioSourceService implements IauthSource {
   }
 
   async getCurrentUser(): Promise<AuthUser | null> {
-    return null;
-}
+    try {
+      const token = await this.prefs.retrieveData<string>("token");
+      const userId = await this.prefs.retrieveData<string>("userId");
 
+      if (!token || !userId) {
+        console.warn("No token or userId found");
+        return null;
+      }
+
+      const uri = `https://roble-api.openlab.uninorte.edu.co/database/${this.projectId}/read?tableName=Users&userId=${userId}`;
+
+      const response = await fetch(uri, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.status === 200) {
+        const data = await response.json();
+
+        if (!Array.isArray(data) || data.length === 0) {
+          console.warn("User not found in DB");
+          return null;
+        }
+
+        const user = data[0];
+
+        const mappedUser: AuthUser = {
+          email: user.email,
+          password: "", // no viene del backend
+          rol: user.rol ?? "estudiante",
+        };
+
+        return mappedUser;
+      } else {
+        const body = await response.json();
+        console.error("getCurrentUser error:", body.message);
+        return null;
+      }
+    } catch (e) {
+      console.error("getCurrentUser failed", e);
+      return null;
+    }
+  }
 
   async validate(email: string, validationCode: string): Promise<boolean> {
     try {
@@ -148,7 +198,7 @@ export class AuthenticatioSourceService implements IauthSource {
       throw e;
     }
   }
-  
+
   async verifyToken(): Promise<boolean> {
     try {
       const token = await this.prefs.retrieveData<string>("token");

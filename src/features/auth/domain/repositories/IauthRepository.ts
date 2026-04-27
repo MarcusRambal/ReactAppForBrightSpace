@@ -1,3 +1,4 @@
+//src/features/auth/domain/repositories/IauthRepository.ts
 import { AuthUser } from "../entities/authUser";
 
 export interface IAuthRepository {

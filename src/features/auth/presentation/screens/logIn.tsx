@@ -1,3 +1,4 @@
+//src/features/auth/presentation/screens/logIn.tsx
 import React,{ useState, useRef } from "react";
 import { useNavigation } from '@react-navigation/native';
 
@@ -19,7 +20,7 @@ export default function LogIn({ navigation }: { navigation: any }) {
 
     const { login, error, clearError } = useAuth();
     const [email, setEmail] = useState("a@a.com");
-    const [password, setPassword] = useState("ThePassword!1");
+    const [password, setPassword] = useState("ThePassword!1.");
     const [obscurePassword, setObscurePassword] = useState(true);
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState<FormErrors>({});
