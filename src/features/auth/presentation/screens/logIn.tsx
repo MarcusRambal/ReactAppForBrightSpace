@@ -54,7 +54,9 @@ export default function LogIn({ navigation }: { navigation: any }) {
 
     try {
       setLoading(true);
+       console.log("👉 Intentando login con:", email);
       await login(email.trim(), password);
+      console.log("✅ login() terminó en contexto");
     } finally {
       setLoading(false);
     }

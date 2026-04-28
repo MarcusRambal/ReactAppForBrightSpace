@@ -47,21 +47,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     clearError();
     try {
       setLoading(true);
+
+      console.log("🔥 AUTH CONTEXT: login start");
+
       await authRepo.login(email, password);
-      setIsLoggedIn(true);
+
+      console.log("🔥 AUTH CONTEXT: login OK, llamando getCurrentUser");
+
+      const user = await authRepo.getCurrentUser();
+
+      console.log("👤 USER FROM API:", user);
+
+      setLoggedUser(user);
+      setIsLoggedIn(!!user);
+      console.log("📌 isLoggedIn:", !!user);
     } catch (err: any) {
+      console.log("❌ LOGIN ERROR:", err);
       setError(err?.message ?? "Login failed");
     } finally {
       setLoading(false);
     }
   };
-
   const signup = async (email: string, password: string) => {
     clearError();
     try {
       setLoading(true);
-      await authRepo.signup(email, password);
-      setIsLoggedIn(true);
+      const user = await authRepo.getCurrentUser();
+      setLoggedUser(user);
+      setIsLoggedIn(!!user);
     } catch (err: any) {
       setError(err?.message ?? "Signup failed");
     } finally {
@@ -74,6 +87,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       setLoading(true);
       await authRepo.logout();
+      setLoggedUser(null); // 🔥 IMPORTANTE
       setIsLoggedIn(false);
     } catch (err: any) {
       setError(err?.message ?? "Logout failed");

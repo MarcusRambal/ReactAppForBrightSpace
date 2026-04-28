@@ -3,15 +3,16 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createStackNavigator } from "@react-navigation/stack";
 import React from "react";
 
+import { View, Text } from "react-native";
+
 import { useAuth } from "./features/auth/presentation/context/authContext";
 import LoginScreen from "./features/auth/presentation/screens/logIn";
-// import SignupScreen from "./features/auth/presentation/screens/SignupScreen";
 
+import StudentHomeScreen from "./features/studentHome/presentation/screens/StudentHomeScreen";
 import SettingScreen from "./features/settings/settingScreen";
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
-
 
 function ContentTabs() {
   const { logout } = useAuth();
@@ -36,19 +37,41 @@ function ContentTabs() {
   );
 }
 
-
 export default function NavigationFlow() {
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, loggedUser, loading } = useAuth();
+
+  console.log("isLoggedIn:", isLoggedIn);
+  console.log("loggedUser:", loggedUser);
+
+  // 🔥 IMPORTANTE: evita render mientras carga
+  if (loading) {
+    return <Text>Cargando...</Text>;
+  }
 
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <Stack.Navigator
+      key={isLoggedIn ? "user" : "guest"} // 🔥 CLAVE DEL FIX
+      screenOptions={{ headerShown: false }}
+    >
       {isLoggedIn ? (
-        <Stack.Screen name="App" component={ContentTabs} />
+        loggedUser?.rol === "estudiante" ? (
+          <Stack.Screen
+            name="StudentHome"
+            component={StudentHomeScreen}
+          />
+        ) : loggedUser?.rol === "profesor" ? (
+          <Stack.Screen name="TeacherHome">
+            {() => (
+              <Text>Teacher Home - {loggedUser?.email}</Text>
+            )}
+          </Stack.Screen>
+        ) : (
+          <Stack.Screen name="NoAccess">
+            {() => <Text>No tienes permisos</Text>}
+          </Stack.Screen>
+        )
       ) : (
-        <>
-          <Stack.Screen name="Login" component={LoginScreen} />
-          
-        </>
+        <Stack.Screen name="Login" component={LoginScreen} />
       )}
     </Stack.Navigator>
   );

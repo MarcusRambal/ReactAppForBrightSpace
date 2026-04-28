@@ -4,4 +4,7 @@ export const TOKENS = {
   ProductRemoteDS: Symbol("ProductRemoteDS"),
   ProductRepo: Symbol("ProductRepo"),
   // Add Product tokens if you want to DI those too...
+  CursoSource: Symbol("CursoSource"),
+  CursoRepo: Symbol("CursoRepo"),
+
 } as const;

@@ -1,3 +1,4 @@
+//App.tsx
 import { NavigationContainer } from "@react-navigation/native";
 import React from "react";
 import { PaperProvider } from "react-native-paper";

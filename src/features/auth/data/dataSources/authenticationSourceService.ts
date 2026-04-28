@@ -8,6 +8,7 @@ import { AuthUser } from "../../domain/entities/authUser";
 export class AuthenticatioSourceService implements IauthSource {
   private readonly projectId: string;
   private readonly baseUrl: string;
+  private readonly dbUrl: string;
 
   private prefs: ILocalPreferences;
 
@@ -17,25 +18,28 @@ export class AuthenticatioSourceService implements IauthSource {
     }
     this.projectId = projectId;
     this.baseUrl = `https://roble-api.openlab.uninorte.edu.co/auth/${this.projectId}`;
+    this.dbUrl = `https://roble-api.openlab.uninorte.edu.co/database/${projectId}`;
+
     this.prefs = LocalPreferencesAsyncStorage.getInstance();
   }
 
   async login(email: string, password: string): Promise<void> {
+    console.log("🌐 LOGIN REQUEST:", email);
     try {
       const response = await fetch(`${this.baseUrl}/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json; charset=UTF-8" },
         body: JSON.stringify({ email, password }),
       });
-
+      console.log("🌐 LOGIN STATUS:", response.status);
       if (response.status === 201) {
         const data = await response.json();
-
+        console.log("🌐 LOGIN RESPONSE:", data);
         const token = data["accessToken"];
         const refreshToken = data["refreshToken"];
         const userId = data["user"]["id"];
         const emailUser = data["user"]["email"];
-
+        console.log("💾 TOKEN + USERID GUARDADOS");
         await this.prefs.storeData("token", token);
         await this.prefs.storeData("refreshToken", refreshToken);
         await this.prefs.storeData("userId", userId);
@@ -48,6 +52,8 @@ export class AuthenticatioSourceService implements IauthSource {
         throw new Error(`Login error: ${body.message}`);
       }
     } catch (e: any) {
+      console.log("❌ LOGIN FAILED:", e);
+
       //console.error("Login failed", e);
       throw e;
     }
@@ -104,26 +110,28 @@ export class AuthenticatioSourceService implements IauthSource {
 
   async getCurrentUser(): Promise<AuthUser | null> {
     try {
-      const token = await this.prefs.retrieveData<string>("token");
+      const token = await this.getValidToken();
       const userId = await this.prefs.retrieveData<string>("userId");
+      console.log("🔎 GET USER - token:", token);
+      console.log("🔎 GET USER - userId:", userId);
 
       if (!token || !userId) {
         console.warn("No token or userId found");
         return null;
       }
 
-      const uri = `https://roble-api.openlab.uninorte.edu.co/database/${this.projectId}/read?tableName=Users&userId=${userId}`;
-
+      const uri = `${this.dbUrl}/read?tableName=Users&userId=${userId}`;
+      console.log("🔎 GET USER URL:", uri);
       const response = await fetch(uri, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-
+      console.log("🔎 GET USER STATUS:", response.status);
       if (response.status === 200) {
         const data = await response.json();
-
+        console.log("🔎 GET USER DATA:", data);
         if (!Array.isArray(data) || data.length === 0) {
           console.warn("User not found in DB");
           return null;
@@ -133,9 +141,10 @@ export class AuthenticatioSourceService implements IauthSource {
 
         const mappedUser: AuthUser = {
           email: user.email,
-          password: "", // no viene del backend
+          password: "",
           rol: user.rol ?? "estudiante",
         };
+        console.log("RAW USER:", user);
 
         return mappedUser;
       } else {
@@ -148,7 +157,6 @@ export class AuthenticatioSourceService implements IauthSource {
       return null;
     }
   }
-
   async validate(email: string, validationCode: string): Promise<boolean> {
     try {
       const response = await fetch(`${this.baseUrl}/verify-email`, {
@@ -198,7 +206,17 @@ export class AuthenticatioSourceService implements IauthSource {
       throw e;
     }
   }
+  public async getValidToken(): Promise<string> {
+    let token = await this.prefs.retrieveData<string>("token");
 
+    if (!token) {
+      const refreshed = await this.refreshToken();
+      if (!refreshed) throw new Error("No se pudo refrescar");
+      token = await this.prefs.retrieveData<string>("token");
+    }
+
+    return token!;
+  }
   async verifyToken(): Promise<boolean> {
     try {
       const token = await this.prefs.retrieveData<string>("token");
