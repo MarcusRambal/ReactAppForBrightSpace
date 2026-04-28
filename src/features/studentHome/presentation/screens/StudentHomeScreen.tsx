@@ -1,19 +1,10 @@
-// src/features/studentHome/presentation/screens/StudentHomeScreen.tsx
-
 import React from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ActivityIndicator,
-  FlatList,
-  TouchableOpacity,
-} from "react-native";
+import { View, Text, StyleSheet, ActivityIndicator, FlatList, TouchableOpacity } from "react-native";
+import { useNavigation } from "@react-navigation/native"; // 🔥 IMPORTANTE
 
 import { useAuth } from "@/src/features/auth/presentation/context/authContext";
 import { useDI } from "@/src/core/di/diProvider";
 import { TOKENS } from "@/src/core/di/tokens";
-
 import { useStudentHomeController } from "../context/studentHomeController";
 import { ICursoRepository } from "@/src/features/cursos/domain/repositories/ICursoRepository";
 import { CursoMatriculado } from "@/src/features/cursos/domain/entities/CursoMatriculado";
@@ -21,15 +12,9 @@ import { CursoMatriculado } from "@/src/features/cursos/domain/entities/CursoMat
 export default function StudentHomeScreen() {
   const { loggedUser, logout } = useAuth();
   const di = useDI();
-
   const cursoRepo = di.resolve<ICursoRepository>(TOKENS.CursoRepo);
+  const { cursos, isLoading } = useStudentHomeController(cursoRepo, loggedUser?.email ?? "");
 
-  const { cursos, isLoading } = useStudentHomeController(
-    cursoRepo,
-    loggedUser?.email ?? ""
-  );
-
-  // 🔥 LOADING
   if (isLoading) {
     return (
       <View style={styles.center}>
@@ -38,37 +23,28 @@ export default function StudentHomeScreen() {
     );
   }
 
-  // 🔥 EMPTY STATE
   if (cursos.length === 0) {
     return (
       <View style={styles.center}>
-        <Text style={styles.emptyText}>
-          Aún no estás inscrito en ningún curso.
-        </Text>
+        <Text style={styles.emptyText}>Aún no estás inscrito en ningún curso.</Text>
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
-      {/* HEADER */}
       <View style={styles.header}>
         <Text style={styles.title}>Bienvenido</Text>
-
         <TouchableOpacity onPress={logout}>
           <Text style={styles.logout}>Cerrar sesión</Text>
         </TouchableOpacity>
       </View>
 
-      {/* RESUMEN */}
       <View style={styles.summaryCard}>
         <Text style={styles.summaryTitle}>Evaluaciones pendientes</Text>
-
-        {/* ❌ NO IMPLEMENTADO */}
         <Text style={styles.summaryValue}>0 tareas</Text>
       </View>
 
-      {/* LISTA DE CURSOS */}
       <FlatList
         data={cursos}
         keyExtractor={(item) => item.curso.id}
@@ -80,40 +56,32 @@ export default function StudentHomeScreen() {
   );
 }
 
-//
-// 📦 COMPONENTE CARD (equivalente a _buildCourseCard)
-//
-const CourseCard = ({
-  curso,
-  index,
-}: {
-  curso: CursoMatriculado;
-  index: number;
-}) => {
+// 📦 COMPONENTE CARD MODIFICADO
+const CourseCard = ({ curso, index }: { curso: CursoMatriculado; index: number; }) => {
+  const navigation = useNavigation<any>(); // 🔥 INSTANCIAMOS NAVEGACIÓN
   const colors = ["#8B0000", "#E6C363", "#2E8B57", "#4682B4"];
   const color = colors[index % colors.length];
 
   return (
     <View style={styles.card}>
       <View style={[styles.cardTop, { backgroundColor: color }]} />
-
       <View style={styles.cardContent}>
         <Text style={styles.courseTitle}>{curso.curso.nombre}</Text>
         <Text style={styles.courseId}>NRC: {curso.curso.id}</Text>
 
         <Text style={styles.sectionTitle}>Tus asignaciones:</Text>
-
         {curso.grupos.map((g, i) => (
           <Text key={i} style={styles.groupText}>
             • {g.categoriaNombre}: {g.grupoNombre}
           </Text>
         ))}
 
-        {/* ❌ BOTÓN SOLO VISUAL */}
-        <TouchableOpacity style={styles.button}>
-          <Text style={styles.buttonText}>
-            Evaluaciones pendientes
-          </Text>
+        {/* 🔥 BOTÓN FUNCIONAL QUE NAVEGA A LOS DETALLES */}
+        <TouchableOpacity 
+          style={styles.button}
+          onPress={() => navigation.navigate("StudentCourseDetails", { cursoMatriculado: curso })}
+        >
+          <Text style={styles.buttonText}>Ver detalles del curso</Text>
         </TouchableOpacity>
       </View>
     </View>
