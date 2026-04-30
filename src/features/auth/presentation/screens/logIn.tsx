@@ -134,7 +134,7 @@ export default function LogIn({ navigation }: { navigation: any }) {
 
       <Button
         testID="create-account-button"
-        mode="text" onPress={() => navigation.navigate("Signup")}>
+        mode="text" onPress={() => navigation.navigate("SignUp")}>
         Don&apos;t have an account? Sign Up
       </Button>
 

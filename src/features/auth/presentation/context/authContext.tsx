@@ -11,9 +11,10 @@ export type AuthContextType = {
   isLoggedIn: boolean;
   loading: boolean;
   error: string | null;
+  emailToVerify: string;
   clearError: () => void;
   login: (email: string, password: string) => Promise<void>;
-  signup: (email: string, password: string) => Promise<void>;
+  signup: (name: string, email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   validate: (email: string, validationCode: string) => Promise<boolean>;
   getLoggedUser: () => Promise<any | null>;
@@ -28,6 +29,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const [loggedUser, setLoggedUser] = useState<AuthUser | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [emailToVerify, setEmailToVerify] = useState<string>("");
+  const [isWaitingForValidation, setIsWaitingForValidation] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -68,13 +71,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(false);
     }
   };
-  const signup = async (email: string, password: string) => {
+  const signup = async (name: string, email: string, password: string) => {
     clearError();
     try {
       setLoading(true);
-      const user = await authRepo.getCurrentUser();
-      setLoggedUser(user);
-      setIsLoggedIn(!!user);
+      await authRepo.signup(name, email, password);
+      setEmailToVerify(email);
+
     } catch (err: any) {
       setError(err?.message ?? "Signup failed");
     } finally {
@@ -101,6 +104,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     clearError();
     try {
       await authRepo.validate(email, validationCode);
+      await authRepo.addUser(email);
+      setIsWaitingForValidation(false);
+      setEmailToVerify("");
     } catch (err: any) {
       return err?.message ?? "Validation failed";
     }
@@ -116,7 +122,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ loggedUser, isLoggedIn, loading, error, clearError, login, signup, logout, validate, getLoggedUser }}>
+    <AuthContext.Provider value={{ loggedUser, isLoggedIn, loading, error,emailToVerify,  clearError, login, signup, logout, validate, getLoggedUser }}>
       {children}
     </AuthContext.Provider>
   );

@@ -59,20 +59,22 @@ export class AuthenticatioSourceService implements IauthSource {
     }
   }
 
-  async signUp(email: string, password: string): Promise<void> {
+  async signUp(name: string, email: string, password: string): Promise<void> {
     try {
       const response = await fetch(`${this.baseUrl}/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json; charset=UTF-8" },
         body: JSON.stringify({
           email: email,
-          name: email.split("@")[0],
+          name: name,
           password: password,
         }),
       });
 
       if (response.status === 201) {
-        return this.login(email, password);
+        // return this.login(email, password);
+        console.log("Signup successful");
+        return Promise.resolve();
       } else {
         const body = await response.json();
         throw new Error(`Signup error: ${(body.message || []).join(" ")}`);
@@ -173,6 +175,46 @@ export class AuthenticatioSourceService implements IauthSource {
       }
     } catch (e: any) {
       console.error("Validation failed", e);
+      throw e;
+    }
+  }
+
+  async addUser(email: string): Promise<void> {
+    try {
+      const token = await this.getValidToken();
+      const userId = await this.prefs.retrieveData<string>("userId");
+      if (!userId) {
+        throw new Error("No userId found");
+      }
+
+      const response = await fetch(`${this.dbUrl}/insert`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json; charset=UTF-8",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          tableName: "Users",
+          records: [
+            {
+              userId,
+              email,
+              rol: "estudiante",
+            },
+          ],
+        }),
+      });
+
+      if (response.status === 201) {
+        console.log("Usuario agregado exitosamente a la tabla Users");
+        return;
+      }
+
+      const body = await response.json();
+      const errorMessage = body?.message ?? `Unexpected status ${response.status}`;
+      throw new Error(`AddUser error: ${errorMessage}`);
+    } catch (e: any) {
+      console.error("Add user failed", e);
       throw e;
     }
   }

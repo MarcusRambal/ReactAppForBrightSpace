@@ -1,48 +1,12 @@
-// src/navigationFlow.tsx
-import { FontAwesome6 } from "@react-native-vector-icons/fontawesome6";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { createStackNavigator } from "@react-navigation/stack";
 import React from "react";
 import { Text } from "react-native";
-
 import { useAuth } from "./features/auth/presentation/context/authContext";
-import LoginScreen from "./features/auth/presentation/screens/logIn";
-import StudentHomeScreen from "./features/studentHome/presentation/screens/StudentHomeScreen";
-import SettingScreen from "./features/settings/settingScreen";
-
-// 🔥 NUEVAS PANTALLAS
-import StudentCourseDetailsScreen from "./features/studentHome/presentation/screens/StudentCourseDetailsScreen";
-import GroupDetailsScreen from "./features/studentHome/presentation/screens/GroupDetailsScreen";
-
-// ✅ NUEVA PANTALLA (EVALUACIONES PENDIENTES)
-import StudentPendingEvaluationsScreen from "./features/studentHome/presentation/screens/StudentPendingEvaluationsScreen";
+import AuthStack from "./authStack";
+import StudentStack from "./studentStack";
+import TeacherStack from "./teacherStack";
+import { createStackNavigator } from "@react-navigation/stack";
 
 const Stack = createStackNavigator();
-const Tab = createBottomTabNavigator();
-
-function ContentTabs() {
-  const { logout } = useAuth();
-
-  return (
-    <Tab.Navigator screenOptions={{ headerShown: false }}>
-      <Tab.Screen
-        name="Profile"
-        component={SettingScreen}
-        options={{
-          tabBarLabel: "Profile",
-          tabBarIcon: ({ color }) => (
-            <FontAwesome6
-              name="user"
-              size={24}
-              color={color}
-              iconStyle="solid"
-            />
-          ),
-        }}
-      />
-    </Tab.Navigator>
-  );
-}
 
 export default function NavigationFlow() {
   const { isLoggedIn, loggedUser, loading } = useAuth();
@@ -52,42 +16,19 @@ export default function NavigationFlow() {
   }
 
   return (
-    <Stack.Navigator
-      key={isLoggedIn ? "user" : "guest"}
-      screenOptions={{ headerShown: false }}
-    >
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
       {isLoggedIn ? (
         loggedUser?.rol === "estudiante" ? (
-          <>
-            <Stack.Screen name="StudentHome" component={StudentHomeScreen} />
-
-            <Stack.Screen
-              name="StudentCourseDetails"
-              component={StudentCourseDetailsScreen}
-            />
-
-            <Stack.Screen
-              name="GroupDetails"
-              component={GroupDetailsScreen}
-            />
-
-            {/* 🔥 NUEVA PANTALLA REGISTRADA */}
-            <Stack.Screen
-              name="StudentPendingEvaluationsScreen"
-              component={StudentPendingEvaluationsScreen}
-            />
-          </>
+          <Stack.Screen name="StudentFlow" component={StudentStack} />
         ) : loggedUser?.rol === "profesor" ? (
-          <Stack.Screen name="TeacherHome">
-            {() => <Text>Teacher Home - {loggedUser?.email}</Text>}
-          </Stack.Screen>
+          <Stack.Screen name="TeacherFlow" component={TeacherStack} />
         ) : (
           <Stack.Screen name="NoAccess">
             {() => <Text>No tienes permisos</Text>}
           </Stack.Screen>
         )
       ) : (
-        <Stack.Screen name="Login" component={LoginScreen} />
+        <Stack.Screen name="AuthFlow" component={AuthStack} />
       )}
     </Stack.Navigator>
   );
