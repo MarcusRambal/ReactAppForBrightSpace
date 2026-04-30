@@ -16,6 +16,9 @@ import { LocalPreferencesAsyncStorage } from "@/src/core/LocalPreferencesAsyncSt
 
 import { Container } from "./container";
 
+import { GrupoSourceService } from "@/src/features/grupo/data/dataSources/grupoSourceService";
+import { GrupoRepository } from "@/src/features/grupo/data/repositories/GrupoRepository";
+
 const DIContext = createContext<Container | null>(null);
 
 export function DIProvider({ children }: { children: React.ReactNode }) {
@@ -54,8 +57,16 @@ export function DIProvider({ children }: { children: React.ReactNode }) {
 
         c.register(TOKENS.EvaluacionSource, evaluacionDS)
             .register(TOKENS.EvaluacionRepo, evaluacionRepo);
+        
+        // 👥 GRUPOS (🔥 NUEVO FEATURE)
+        const grupoDS = new GrupoSourceService(prefs, authDS);
+        const grupoRepo = new GrupoRepository(grupoDS);
 
+        c.register(TOKENS.GrupoSource, grupoDS)
+         .register(TOKENS.GrupoRepo, grupoRepo);
+         
         return c;
+
     }, []);
 
     return <DIContext.Provider value={container}>{children}</DIContext.Provider>;
