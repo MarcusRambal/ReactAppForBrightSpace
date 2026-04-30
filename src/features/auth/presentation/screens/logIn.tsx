@@ -19,7 +19,7 @@ interface FormErrors {
 export default function LogIn({ navigation }: { navigation: any }) {
 
     const { login, error, clearError } = useAuth();
-    const [email, setEmail] = useState("a@a.com");
+    const [email, setEmail] = useState("acoronellm@uninorte.edu.co");
     const [password, setPassword] = useState("ThePassword!1.");
     const [obscurePassword, setObscurePassword] = useState(true);
     const [loading, setLoading] = useState(false);

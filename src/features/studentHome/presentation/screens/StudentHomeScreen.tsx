@@ -1,19 +1,51 @@
-import React from "react";
-import { View, Text, StyleSheet, ActivityIndicator, FlatList, TouchableOpacity } from "react-native";
-import { useNavigation } from "@react-navigation/native"; // 🔥 IMPORTANTE
+// src/features/studentHome/presentation/screens/StudentHomeScreen.tsx
+import React, { useEffect } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+  FlatList,
+  TouchableOpacity,
+} from "react-native";
+import { useNavigation } from "@react-navigation/native";
 
 import { useAuth } from "@/src/features/auth/presentation/context/authContext";
 import { useDI } from "@/src/core/di/diProvider";
 import { TOKENS } from "@/src/core/di/tokens";
+
 import { useStudentHomeController } from "../context/studentHomeController";
+import { useEvaluacionesController } from "@/src/features/evaluaciones/presentation/context/useEvaluacionesController";
+
 import { ICursoRepository } from "@/src/features/cursos/domain/repositories/ICursoRepository";
+import { IEvaluacionRepository } from "@/src/features/evaluaciones/domain/repositories/IEvaluacionRepository";
 import { CursoMatriculado } from "@/src/features/cursos/domain/entities/CursoMatriculado";
 
 export default function StudentHomeScreen() {
   const { loggedUser, logout } = useAuth();
+  const navigation = useNavigation<any>();
   const di = useDI();
+
   const cursoRepo = di.resolve<ICursoRepository>(TOKENS.CursoRepo);
-  const { cursos, isLoading } = useStudentHomeController(cursoRepo, loggedUser?.email ?? "");
+  const evaluacionRepo = di.resolve<IEvaluacionRepository>(
+    TOKENS.EvaluacionRepo
+  );
+
+  const { cursos, isLoading } = useStudentHomeController(
+    cursoRepo,
+    loggedUser?.email ?? ""
+  );
+
+  const evaluacionesController = useEvaluacionesController();
+
+  // 🔥 equivalente a ever + initState de Flutter
+  useEffect(() => {
+    if (cursos.length > 0) {
+      const grupos = cursos.flatMap((c) => c.grupos);
+
+      evaluacionesController.cargarEvaluacionesIncompletasPorGrupos(grupos);
+    }
+  }, [cursos]);
 
   if (isLoading) {
     return (
@@ -26,7 +58,9 @@ export default function StudentHomeScreen() {
   if (cursos.length === 0) {
     return (
       <View style={styles.center}>
-        <Text style={styles.emptyText}>Aún no estás inscrito en ningún curso.</Text>
+        <Text style={styles.emptyText}>
+          Aún no estás inscrito en ningún curso.
+        </Text>
       </View>
     );
   }
@@ -40,9 +74,17 @@ export default function StudentHomeScreen() {
         </TouchableOpacity>
       </View>
 
+      {/* 🔥 SUMMARY CARD DINÁMICO */}
       <View style={styles.summaryCard}>
         <Text style={styles.summaryTitle}>Evaluaciones pendientes</Text>
-        <Text style={styles.summaryValue}>0 tareas</Text>
+
+        {evaluacionesController.isLoading ? (
+          <ActivityIndicator size="small" />
+        ) : (
+          <Text style={styles.summaryValue}>
+            {evaluacionesController.evaluacionesIncompletas.length} tareas
+          </Text>
+        )}
       </View>
 
       <FlatList
@@ -56,40 +98,64 @@ export default function StudentHomeScreen() {
   );
 }
 
-// 📦 COMPONENTE CARD MODIFICADO
-const CourseCard = ({ curso, index }: { curso: CursoMatriculado; index: number; }) => {
-  const navigation = useNavigation<any>(); // 🔥 INSTANCIAMOS NAVEGACIÓN
+// 📦 CARD
+const CourseCard = ({
+  curso,
+  index,
+}: {
+  curso: CursoMatriculado;
+  index: number;
+}) => {
+  const navigation = useNavigation<any>();
+
   const colors = ["#8B0000", "#E6C363", "#2E8B57", "#4682B4"];
   const color = colors[index % colors.length];
 
   return (
     <View style={styles.card}>
       <View style={[styles.cardTop, { backgroundColor: color }]} />
+
       <View style={styles.cardContent}>
         <Text style={styles.courseTitle}>{curso.curso.nombre}</Text>
         <Text style={styles.courseId}>NRC: {curso.curso.id}</Text>
 
         <Text style={styles.sectionTitle}>Tus asignaciones:</Text>
+
         {curso.grupos.map((g, i) => (
           <Text key={i} style={styles.groupText}>
             • {g.categoriaNombre}: {g.grupoNombre}
           </Text>
         ))}
 
-        {/* 🔥 BOTÓN FUNCIONAL QUE NAVEGA A LOS DETALLES */}
-        <TouchableOpacity 
+        {/* 🔥 BOTÓN DETALLES */}
+        <TouchableOpacity
           style={styles.button}
-          onPress={() => navigation.navigate("StudentCourseDetails", { cursoMatriculado: curso })}
+          onPress={() =>
+            navigation.navigate("StudentCourseDetails", {
+              cursoMatriculado: curso,
+            })
+          }
         >
           <Text style={styles.buttonText}>Ver detalles del curso</Text>
+        </TouchableOpacity>
+
+        {/* 🔥 BOTÓN NUEVO: EVALUACIONES */}
+        <TouchableOpacity
+          style={[styles.button, { backgroundColor: "#4CAF50" }]}
+          onPress={() =>
+            navigation.navigate("StudentPendingEvaluationsScreen", {
+              cursoMatriculado: curso,
+            })
+          }
+        >
+          <Text style={styles.buttonText}>Evaluaciones pendientes</Text>
         </TouchableOpacity>
       </View>
     </View>
   );
 };
-
 //
-// 🎨 STYLES (como Flutter, pero en RN)
+// 🎨 STYLES
 //
 const styles = StyleSheet.create({
   container: {

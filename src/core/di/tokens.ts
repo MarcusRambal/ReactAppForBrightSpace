@@ -7,4 +7,9 @@ export const TOKENS = {
   CursoSource: Symbol("CursoSource"),
   CursoRepo: Symbol("CursoRepo"),
 
+  EvaluacionSource: Symbol("EvaluacionSource"),
+  EvaluacionRepo: Symbol("EvaluacionRepo"),
+
+    // 🔥 AGREGA ESTE
+  LocalPreferences: Symbol("LocalPreferences"),
 } as const;

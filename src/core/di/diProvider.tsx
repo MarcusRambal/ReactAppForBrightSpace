@@ -9,6 +9,9 @@ import { AuthRepository } from "@/src/features/auth/data/repositories/authReposi
 import { CursoSourceService } from "@/src/features/cursos/data/dataSources/cursoSourceService";
 import { CursoRepository } from "@/src/features/cursos/data/repositories/cursoRepository";
 
+import { EvaluacionSourceService } from "@/src/features/evaluaciones/data/dataSources/evaluacionSourceService";
+import { EvaluacionRepository } from "@/src/features/evaluaciones/data/repositories/EvaluacionRepository";
+
 import { LocalPreferencesAsyncStorage } from "@/src/core/LocalPreferencesAsyncStorage";
 
 import { Container } from "./container";
@@ -25,20 +28,32 @@ export function DIProvider({ children }: { children: React.ReactNode }) {
         const authRepo = new AuthRepository(authDS);
 
         c.register(TOKENS.AuthRemoteDS, authDS)
-         .register(TOKENS.AuthRepo, authRepo);
+            .register(TOKENS.AuthRepo, authRepo);
 
-        // 📚 CURSOS (🔥 AÑADIDO)
+        // 📦 SHARED PREFS
         const prefs = LocalPreferencesAsyncStorage.getInstance();
-
+        c.register(TOKENS.LocalPreferences, prefs);
+        // 📚 CURSOS
         const cursoDS = new CursoSourceService(
             prefs,
-            authDS // usamos el mismo authService
+            authDS
         );
 
         const cursoRepo = new CursoRepository(cursoDS);
 
         c.register(TOKENS.CursoSource, cursoDS)
-         .register(TOKENS.CursoRepo, cursoRepo);
+            .register(TOKENS.CursoRepo, cursoRepo);
+
+        // 📝 EVALUACIONES (🔥 NUEVO)
+        const evaluacionDS = new EvaluacionSourceService(
+            prefs,
+            authDS
+        );
+
+        const evaluacionRepo = new EvaluacionRepository(evaluacionDS);
+
+        c.register(TOKENS.EvaluacionSource, evaluacionDS)
+            .register(TOKENS.EvaluacionRepo, evaluacionRepo);
 
         return c;
     }, []);
