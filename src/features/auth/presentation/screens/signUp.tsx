@@ -51,19 +51,20 @@ export default function SignUp({ navigation }: { navigation: any }) {
     return isValid;
   };
 
-  const handleSubmit = async () => {
-    Keyboard.dismiss();
-    
-    if (!validateForm()) return; 
-
-    try {
-
-      await signup(name, email, password);
-      navigation.navigate("VerificationEmail");
-    } finally {
-      setLoading(false);
-    }
-  };
+       const handleSubmit = async () => {
+        Keyboard.dismiss();
+        if (!validateForm()) return; 
+        console.log("Rutas disponibles:", navigation.getState()?.routeNames);
+        
+        // Llamamos al signup y esperamos el resultado booleano
+        const isSuccess = await signup(name, email, password);
+        console.log("Signup result:", isSuccess);
+        if (isSuccess) {
+          console.log("Navegando a VerificationEmail");
+          navigation.navigate("VerificationEmail");
+          
+        }
+};
 
   return (
     <Surface style={styles.container}>

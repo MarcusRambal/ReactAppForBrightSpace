@@ -12,9 +12,10 @@ export type AuthContextType = {
   loading: boolean;
   error: string | null;
   emailToVerify: string;
+  isWaitingForValidation: boolean;
   clearError: () => void;
   login: (email: string, password: string) => Promise<void>;
-  signup: (name: string, email: string, password: string) => Promise<void>;
+  signup: (name: string, email: string, password: string) => Promise<Boolean>;
   logout: () => Promise<void>;
   validate: (email: string, validationCode: string) => Promise<boolean>;
   getLoggedUser: () => Promise<any | null>;
@@ -57,9 +58,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       console.log("🔥 AUTH CONTEXT: login OK, llamando getCurrentUser");
 
-      const user = await authRepo.getCurrentUser();
+      let user = await authRepo.getCurrentUser();
 
       console.log("👤 USER FROM API:", user);
+
+      // Si el usuario no existe en BD, crear el usuario
+      if (!user) {
+        console.log("👤 Usuario no encontrado en BD, creando...");
+        try {
+          await authRepo.addUser(email);
+          console.log("✅ Usuario creado en BD");
+          // Volver a obtener el usuario después de crearlo
+          user = await authRepo.getCurrentUser();
+          console.log("👤 USER DESPUÉS DE CREAR:", user);
+        } catch (err: any) {
+          console.error("⚠️ Error al crear usuario, pero continúa:", err);
+        }
+      }
 
       setLoggedUser(user);
       setIsLoggedIn(!!user);
@@ -71,19 +86,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(false);
     }
   };
-  const signup = async (name: string, email: string, password: string) => {
-    clearError();
-    try {
-      setLoading(true);
-      await authRepo.signup(name, email, password);
-      setEmailToVerify(email);
+ const signup = async (name: string, email: string, password: string): Promise<boolean> => {
+  clearError();
+  setLoading(true); 
 
-    } catch (err: any) {
-      setError(err?.message ?? "Signup failed");
-    } finally {
-      setLoading(false);
-    }
-  };
+  try {
+    await authRepo.signup(name, email, password);
+    setEmailToVerify(email);
+    setIsWaitingForValidation(true);
+    return true; 
+  } catch (err: any) {
+    setError(err?.message ?? "Signup failed");
+    return false;
+  } finally {
+    setLoading(false);
+  }
+};
 
   const logout = async () => {
     clearError();
@@ -100,17 +118,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
 
-  const validate = async (email: string, validationCode: string) => {
+  const validate = async (email: string, validationCode: string): Promise<boolean> => {
     clearError();
     try {
       await authRepo.validate(email, validationCode);
-      await authRepo.addUser(email);
       setIsWaitingForValidation(false);
       setEmailToVerify("");
+      return true;
     } catch (err: any) {
-      return err?.message ?? "Validation failed";
+      setError(err?.message ?? "Validation failed");
+      return false;
     }
-    return null;
   }
 
   const getLoggedUser = async () => {
@@ -122,7 +140,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ loggedUser, isLoggedIn, loading, error,emailToVerify,  clearError, login, signup, logout, validate, getLoggedUser }}>
+    <AuthContext.Provider value={{ loggedUser, isLoggedIn, loading, error, emailToVerify, isWaitingForValidation, clearError, login, signup, logout, validate, getLoggedUser }}>
       {children}
     </AuthContext.Provider>
   );

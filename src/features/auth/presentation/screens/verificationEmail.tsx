@@ -12,6 +12,7 @@ import { useAuth } from "../context/authContext";
 
 
 export default function VerificationEmail({ navigation}: { navigation: any}) {
+  console.log("🔥 RENDERIZANDO: VerificationEmail está vivo");
   const { validate, error, clearError, emailToVerify } = useAuth();
   const [loading, setLoading] = useState(false);
   const [code, setCode] = useState("");
@@ -23,10 +24,17 @@ export default function VerificationEmail({ navigation}: { navigation: any}) {
             clearError();
             console.log("👉 Validando email con código:", code);
             console.log("👉 Email a validar:", emailToVerify);
-            const validationError = await validate(emailToVerify, code);
-            if (!validationError) {
-              navigation.replace("Login");
+            const isValid = await validate(emailToVerify, code);
+            console.log("👉 Validación exitosa:", isValid);
+            if (isValid) {
+              console.log("✅ Navegando a Login");
+              navigation.reset({
+                index: 0,
+                routes: [{ name: "Login" }],
+              });
             }
+        } catch (err: any) {
+            console.log("❌ Error en validación:", err);
         } finally {
             setLoading(false);
         }
@@ -55,8 +63,21 @@ export default function VerificationEmail({ navigation}: { navigation: any}) {
         textAlign="center"
       />
 
+      {/* ERROR DISPLAY */}
+      {error && (
+        <Text style={{ color: "red", marginBottom: 10, textAlign: "center" }}>
+          {error}
+        </Text>
+      )}
+
       {/* BOTON PRINCIPAL */}
-      <Button mode="contained" style={styles.button} onPress={handleVerification}>
+      <Button 
+        mode="contained" 
+        style={styles.button} 
+        onPress={handleVerification}
+        loading={loading}
+        disabled={loading}
+      >
         Verificar Código
       </Button>
 

@@ -4,32 +4,21 @@ import { useAuth } from "./features/auth/presentation/context/authContext";
 import AuthStack from "./authStack";
 import StudentStack from "./studentStack";
 import TeacherStack from "./teacherStack";
-import { createStackNavigator } from "@react-navigation/stack";
 
-const Stack = createStackNavigator();
 
 export default function NavigationFlow() {
-  const { isLoggedIn, loggedUser, loading } = useAuth();
+  const { isLoggedIn, loggedUser, loading, isWaitingForValidation } = useAuth();
 
-  if (loading) {
-    return <Text>Cargando...</Text>;
-  }
+  console.log("NavigationFlow - isLoggedIn:", isLoggedIn, "isWaitingForValidation:", isWaitingForValidation);
 
-  return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
-      {isLoggedIn ? (
-        loggedUser?.rol === "estudiante" ? (
-          <Stack.Screen name="StudentFlow" component={StudentStack} />
-        ) : loggedUser?.rol === "profesor" ? (
-          <Stack.Screen name="TeacherFlow" component={TeacherStack} />
-        ) : (
-          <Stack.Screen name="NoAccess">
-            {() => <Text>No tienes permisos</Text>}
-          </Stack.Screen>
-        )
-      ) : (
-        <Stack.Screen name="AuthFlow" component={AuthStack} />
-      )}
-    </Stack.Navigator>
-  );
+  if (loading) return <Text>Cargando...</Text>;
+
+  if (!isLoggedIn && isWaitingForValidation) return <AuthStack initialRoute="VerificationEmail" />;
+  if (!isLoggedIn) return <AuthStack initialRoute="Login" />;
+
+  if (loggedUser?.rol === "estudiante") return <StudentStack />;
+  if (loggedUser?.rol === "profesor") return <TeacherStack />;
+
+  return <Text>No tienes permisos</Text>;
 }
+

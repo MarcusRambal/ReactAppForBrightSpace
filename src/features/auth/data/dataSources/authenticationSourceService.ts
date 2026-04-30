@@ -74,7 +74,7 @@ export class AuthenticatioSourceService implements IauthSource {
       if (response.status === 201) {
         // return this.login(email, password);
         console.log("Signup successful");
-        return Promise.resolve();
+
       } else {
         const body = await response.json();
         throw new Error(`Signup error: ${(body.message || []).join(" ")}`);
