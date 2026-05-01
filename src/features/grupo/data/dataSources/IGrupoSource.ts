@@ -2,4 +2,6 @@ import { GrupoIntegranteEntity } from "../../domain/entities/GrupoIntegranteEnti
 
 export interface IGrupoSource {
   getGruposPorCategoria(idCat: string): Promise<GrupoIntegranteEntity[]>;
+  createCategoria(idCurso: string, nombreCat: string): Promise<string>;
+  createGruposBatch(loteEstudiantes: any[]): Promise<void>;
 }

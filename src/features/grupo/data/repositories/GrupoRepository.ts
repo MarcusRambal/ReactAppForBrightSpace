@@ -12,4 +12,12 @@ export class GrupoRepository implements IGrupoRepository {
   async getGruposPorCategoria(idCat: string): Promise<GrupoIntegranteEntity[]> {
     return await this.source.getGruposPorCategoria(idCat);
   }
+
+  async createCategoria(idCurso: string, nombreCat: string): Promise<string> {
+    return await this.source.createCategoria(idCurso, nombreCat);
+  }
+
+  async createGruposBatch(loteEstudiantes: any[]): Promise<void> {
+    return await this.source.createGruposBatch(loteEstudiantes);
+  }
 }

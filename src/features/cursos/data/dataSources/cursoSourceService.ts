@@ -6,6 +6,7 @@ import { CursoMatriculado, CursoMatriculadoMapper } from "../../domain/entities/
 import { ILocalPreferences } from "@/src/core/iLocalPreferences";
 import { LocalPreferencesAsyncStorage } from "@/src/core/LocalPreferencesAsyncStorage";
 import { AuthenticatioSourceService } from "@/src/features/auth/data/dataSources/authenticationSourceService";
+
 export class CursoSourceService implements IcursoSource {
     private readonly baseUrl: string;
     private readonly projectId: string;
@@ -149,6 +150,7 @@ export class CursoSourceService implements IcursoSource {
     }
 
     // 🧹 (simplificado por ahora)
+// 🧹 VACIAR CONTENIDO PROTEGIDO
     async vaciarContenidoCurso(idCurso: string): Promise<void> {
         const token = await this.getValidToken();
 
@@ -165,6 +167,9 @@ export class CursoSourceService implements IcursoSource {
 
         const categorias = await respCat.json();
 
+        // 🔥 PROTECCIÓN CRÍTICA: Si la API no devuelve un arreglo, abortamos el vaciado y pasamos a borrar el curso
+        if (!Array.isArray(categorias)) return;
+
         for (const cat of categorias) {
             const idCat = String(cat.idcat);
 
@@ -179,13 +184,16 @@ export class CursoSourceService implements IcursoSource {
 
             if (respGrupos.status === 200) {
                 const grupos = await respGrupos.json();
-
-                for (const grupo of grupos) {
-                    await this.deleteByPK("Grupos", "idGrupo", grupo.idGrupo, token);
+                
+                // 🔥 PROTECCIÓN DE GRUPOS
+                if (Array.isArray(grupos)) {
+                    for (const grupo of grupos) {
+                        await this.deleteByPK("Grupos", "idGrupo", grupo.idGrupo, token);
+                    }
                 }
             }
 
-            // 3. borrar categoría
+            // 3. Borrar categoría
             await this.deleteByPK("Categoria", "idcat", idCat, token);
         }
     }

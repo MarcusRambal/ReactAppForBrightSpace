@@ -48,4 +48,43 @@ export class GrupoSourceService implements IGrupoSource {
 
     throw new Error("Error al obtener los grupos de la categoría");
   }
+
+  async createCategoria(idCurso: string, nombreCat: string): Promise<string> {
+    const token = await this.getValidToken();
+    const idCat = Date.now().toString() + Math.floor(Math.random() * 1000).toString();
+
+    const response = await fetch(`${this.baseUrl}/database/${this.projectId}/insert`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        tableName: "Categoria",
+        records: [{ idcat: idCat, idCurso: idCurso, nombre: nombreCat }],
+      }),
+    });
+
+    if (response.status === 200 || response.status === 201) return idCat;
+    throw new Error("Error creando categoría");
+  }
+
+  async createGruposBatch(loteEstudiantes: any[]): Promise<void> {
+    const token = await this.getValidToken();
+    const response = await fetch(`${this.baseUrl}/database/${this.projectId}/insert`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        tableName: "Grupos",
+        records: loteEstudiantes,
+      }),
+    });
+
+    if (response.status !== 200 && response.status !== 201) {
+      throw new Error("Error insertando grupos en Roble");
+    }
+  }
 }
