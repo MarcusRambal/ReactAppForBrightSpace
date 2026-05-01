@@ -12,6 +12,8 @@ export type AuthContextType = {
   loading: boolean;
   error: string | null;
   emailToVerify: string;
+  name: string;
+  password: string;
   isWaitingForValidation: boolean;
   clearError: () => void;
   login: (email: string, password: string) => Promise<void>;
@@ -31,6 +33,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loggedUser, setLoggedUser] = useState<AuthUser | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [emailToVerify, setEmailToVerify] = useState<string>("");
+  const [name, setName] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
   const [isWaitingForValidation, setIsWaitingForValidation] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -93,6 +97,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   try {
     await authRepo.signup(name, email, password);
     setEmailToVerify(email);
+    setName(name);
+    setPassword(password);
     setIsWaitingForValidation(true);
     return true; 
   } catch (err: any) {
@@ -140,7 +146,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ loggedUser, isLoggedIn, loading, error, emailToVerify, isWaitingForValidation, clearError, login, signup, logout, validate, getLoggedUser }}>
+    <AuthContext.Provider value={{ loggedUser, isLoggedIn, loading, error, emailToVerify, name, password, isWaitingForValidation, clearError, login, signup, logout, validate, getLoggedUser }}>
       {children}
     </AuthContext.Provider>
   );

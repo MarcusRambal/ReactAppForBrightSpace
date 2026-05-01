@@ -12,8 +12,8 @@ import { useAuth } from "../context/authContext";
 
 
 export default function VerificationEmail({ navigation}: { navigation: any}) {
-  console.log("🔥 RENDERIZANDO: VerificationEmail está vivo");
-  const { validate, error, clearError, emailToVerify } = useAuth();
+  console.log("RENDERIZANDO: VerificationEmail está vivo");
+  const {signup, validate, error, clearError, emailToVerify, name, password } = useAuth();
   const [loading, setLoading] = useState(false);
   const [code, setCode] = useState("");
 
@@ -40,6 +40,21 @@ export default function VerificationEmail({ navigation}: { navigation: any}) {
         }
   }
 
+
+  const handleResendCode = () => {
+
+    try{
+        console.log("🔄 Reenviando código a:", emailToVerify);
+        console.log("🔄 Usando nombre:", name);
+        console.log("🔄 Usando contraseña:", password);
+       signup(name, emailToVerify, password);
+
+    }catch(err){
+      console.log("❌ Error al reenviar código:", err);
+    }
+
+  }
+
   return (
     <Surface style={styles.container}>
       {/* ICONO */}
@@ -49,7 +64,7 @@ export default function VerificationEmail({ navigation}: { navigation: any}) {
       <Text variant="headlineMedium" style={styles.title}>Verificar Email</Text>
       <Text variant="bodyMedium" style={styles.subtitle}>
         Enviamos un código a: {"\n"}
-        <Text style={{ fontWeight: 'bold' }}>{emailToVerify}</Text>
+        <Text style={{ fontWeight: 'bold', color: 'black' }}>{emailToVerify}</Text>
       </Text>
 
       {/* CAMPO DE CODIGO */}
@@ -60,6 +75,7 @@ export default function VerificationEmail({ navigation}: { navigation: any}) {
         keyboardType="numeric"
         maxLength={6}
         placeholder="000000"
+        textColor="black"
         textAlign="center"
       />
 
@@ -77,12 +93,13 @@ export default function VerificationEmail({ navigation}: { navigation: any}) {
         onPress={handleVerification}
         loading={loading}
         disabled={loading}
+        textColor="black"
       >
         Verificar Código
       </Button>
 
       {/* FOOTER ACTIONS */}
-      <TouchableOpacity onPress={() => console.log("Reenviando...")}>
+      <TouchableOpacity onPress={handleResendCode}>
         <Text style={styles.footerText}>No recibí el código. Reenviar</Text>
       </TouchableOpacity>
 
@@ -99,16 +116,17 @@ const styles = StyleSheet.create({
     padding: 20,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#FFFAFF", // Un fondo muy suave si lo deseas
+    backgroundColor: "#FFFAFF", 
   },
   title: {
     marginVertical: 15,
     fontWeight: "bold",
+    color: "black",
   },
   subtitle: {
     textAlign: "center",
     marginBottom: 30,
-    color: "#666",
+    color: "black",
   },
   otpInput: {
     width: '80%',
