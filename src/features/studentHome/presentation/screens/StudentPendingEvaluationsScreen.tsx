@@ -23,10 +23,14 @@ export default function StudentPendingEvaluationsScreen() {
   // 🔥 CARGA INICIAL
   // ===============================
   useEffect(() => {
-    const grupos = cursoMatriculado.grupos;
+    const unsubscribe = navigation.addListener("focus", () => {
+      const grupos = cursoMatriculado.grupos;
 
-    evaluacionesController.cargarEvaluacionesIncompletasPorGrupos(grupos);
-  }, []);
+      evaluacionesController.cargarEvaluacionesIncompletasPorGrupos(grupos);
+    });
+
+    return unsubscribe;
+  }, [navigation, cursoMatriculado]);
 
   const evaluaciones = evaluacionesController.evaluacionesIncompletas;
 
@@ -64,12 +68,6 @@ export default function StudentPendingEvaluationsScreen() {
                     cursoMatriculado: cursoMatriculado,
                   });
 
-                  // 🔄 RECARGA AL VOLVER (igual Flutter)
-                  setTimeout(() => {
-                    evaluacionesController.cargarEvaluacionesIncompletasPorGrupos(
-                      cursoMatriculado.grupos
-                    );
-                  }, 300);
                 }}
               >
                 <Text style={styles.name}>{item.nom}</Text>

@@ -21,6 +21,9 @@ import { ICursoRepository } from "@/src/features/cursos/domain/repositories/ICur
 import { IEvaluacionRepository } from "@/src/features/evaluaciones/domain/repositories/IEvaluacionRepository";
 import { CursoMatriculado } from "@/src/features/cursos/domain/entities/CursoMatriculado";
 
+
+import { useFocusEffect } from "@react-navigation/native";
+import { useCallback } from "react";
 export default function StudentHomeScreen() {
   const { loggedUser, logout } = useAuth();
   const navigation = useNavigation<any>();
@@ -42,10 +45,18 @@ export default function StudentHomeScreen() {
   useEffect(() => {
     if (cursos.length > 0) {
       const grupos = cursos.flatMap((c) => c.grupos);
-
       evaluacionesController.cargarEvaluacionesIncompletasPorGrupos(grupos);
     }
   }, [cursos]);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (cursos.length > 0) {
+        const grupos = cursos.flatMap((c) => c.grupos);
+        evaluacionesController.cargarEvaluacionesIncompletasPorGrupos(grupos);
+      }
+    }, [cursos])
+  );
 
   if (isLoading) {
     return (

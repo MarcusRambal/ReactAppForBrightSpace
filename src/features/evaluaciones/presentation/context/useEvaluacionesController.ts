@@ -118,7 +118,22 @@ export const useEvaluacionesController = (idCategoria?: string) => {
     const limpiarRespuestas = () => {
         setRespuestas([]);
     };
+    const enviarRespuestasDirecto = async (respuestasDirectas: RespuestaEntity[]) => {
+        try {
+            setIsSending(true);
 
+            console.log("📦 enviando:", respuestasDirectas);
+
+            await evaluacionRepo.createRespuestas(respuestasDirectas);
+
+            console.log("✅ Respuestas enviadas");
+
+        } catch (e) {
+            console.error("Error enviando respuestas:", e);
+        } finally {
+            setIsSending(false);
+        }
+    };
     const enviarRespuestas = async () => {
         try {
             setIsSending(true);
@@ -285,5 +300,7 @@ export const useEvaluacionesController = (idCategoria?: string) => {
         yaEvaluo,
         cargarEvaluacionesIncompletasPorGrupos,
         cambiarPrivacidad,
+
+        enviarRespuestasDirecto,
     };
 };
