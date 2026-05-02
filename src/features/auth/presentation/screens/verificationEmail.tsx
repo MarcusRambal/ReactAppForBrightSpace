@@ -69,6 +69,7 @@ export default function VerificationEmail({ navigation}: { navigation: any}) {
 
       {/* CAMPO DE CODIGO */}
       <TextInput
+        testID="code-input"
         style={styles.otpInput}
         value={code}
         onChangeText={(text) => setCode(text.replace(/[^0-9]/g, '').slice(0, 6))}
@@ -88,6 +89,7 @@ export default function VerificationEmail({ navigation}: { navigation: any}) {
 
       {/* BOTON PRINCIPAL */}
       <Button 
+        testID="verify-button"
         mode="contained" 
         style={styles.button} 
         onPress={handleVerification}
@@ -99,11 +101,11 @@ export default function VerificationEmail({ navigation}: { navigation: any}) {
       </Button>
 
       {/* FOOTER ACTIONS */}
-      <TouchableOpacity onPress={handleResendCode}>
+      <TouchableOpacity testID="resend-button" onPress={handleResendCode}>
         <Text style={styles.footerText}>No recibí el código. Reenviar</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => navigation.navigate("SignUp")} style={{ marginTop: 20 }}>
+      <TouchableOpacity testID="back-to-signup-button" onPress={() => navigation.navigate("SignUp")} style={{ marginTop: 20 }}>
         <Text style={styles.linkText}>¿Email incorrecto? Volver al registro</Text>
       </TouchableOpacity>
     </Surface>
