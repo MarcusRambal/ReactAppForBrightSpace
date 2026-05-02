@@ -1,4 +1,5 @@
 // src/features/evaluaciones/presentation/screens/ResponderEvaluacionScreen.tsx
+
 import React, { useEffect, useState } from "react";
 import {
     View,
@@ -16,6 +17,10 @@ import { TOKENS } from "@/src/core/di/tokens";
 import { RespuestaEntity } from "../../domain/entities/RespuestaEntity";
 import { ILocalPreferences } from "@/src/core/iLocalPreferences";
 
+// 🔥 NUEVO
+import { ReporteService } from "@/src/features/reportes/domain/services/ReporteService";
+
+
 export default function ResponderEvaluacionScreen() {
     const route = useRoute<any>();
     const navigation = useNavigation<any>();
@@ -32,6 +37,9 @@ export default function ResponderEvaluacionScreen() {
     const controller = useEvaluacionesController();
 
     const localPrefs = di.resolve<ILocalPreferences>(TOKENS.LocalPreferences);
+
+    // 🔥 NUEVO (DI correcto)
+    const reporteService = di.resolve<ReporteService>(TOKENS.ReporteService);
 
     const [index, setIndex] = useState(0);
     const [miId, setMiId] = useState<string | null>(null);
@@ -90,16 +98,36 @@ export default function ResponderEvaluacionScreen() {
     };
 
     // ===============================
-    // 🔥 FINALIZAR
+    // 🔥 FINALIZAR (CON REPORTES)
     // ===============================
     const finalizarEvaluacion = async () => {
         try {
+            // 🔹 UX rápida (igual que Flutter)
             navigation.goBack();
 
-            await controller.enviarRespuestasDirecto(respuestasTemp);
+            // 🔹 Background
+            controller
+                .enviarRespuestasDirecto(respuestasTemp)
+                .then(async () => {
+                    try {
+                        // 🔥 GENERAR REPORTES
+                        await reporteService.generarTodo({
+                            idEvaluacion: evaluacion.id.toString(),
+                            idCategoria: idCat.toString(),
+                            nombreGrupo: grupoNombre.toString(),
+                            idEstudiante: evaluadoCorreo.toString(),
+                            idCurso: idCurso.toString(),
+                        });
+                    } catch (e) {
+                        console.error("Error generando reportes:", e);
+                    }
+                })
+                .catch((e) => {
+                    console.error("Error enviando evaluación:", e);
+                });
 
         } catch (e) {
-            console.error("Error enviando evaluación:", e);
+            console.error("Error en finalizarEvaluacion:", e);
         }
     };
 

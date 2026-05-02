@@ -1,3 +1,4 @@
+//src/core/di/tokens.ts
 export const TOKENS = {
   AuthRemoteDS: Symbol("AuthRemoteDS"),
   AuthRepo: Symbol("AuthRepo"),
@@ -9,9 +10,14 @@ export const TOKENS = {
 
   EvaluacionSource: Symbol("EvaluacionSource"),
   EvaluacionRepo: Symbol("EvaluacionRepo"),
-  
+
   LocalPreferences: Symbol("LocalPreferences"),
 
   GrupoSource: Symbol("GrupoSource"),
   GrupoRepo: Symbol("GrupoRepo"),
+
+  ReporteSource: Symbol("ReporteSource"),
+  ReporteRepo: Symbol("ReporteRepo"),
+  ReporteService: Symbol("ReporteService"),
+  ReporteController: Symbol("ReporteController"),
 } as const;

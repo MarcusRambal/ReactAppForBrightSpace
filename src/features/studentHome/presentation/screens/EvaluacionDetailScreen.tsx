@@ -99,8 +99,11 @@ export default function EvaluacionDetailScreen() {
             <TouchableOpacity
                 style={styles.resultButton}
                 onPress={() => {
-                    // 🔥 HARDCODE (pantalla aún no implementada)
-                    console.log("Ir a resultados...");
+                    navigation.navigate("StudentReport", {
+                        idEvaluacion: evaluacion.id,
+                        nombreEvaluacion: evaluacion.nom,
+                        esPrivada: evaluacion.esPrivada,
+                    });
                 }}
             >
                 <Text style={styles.resultText}>VER MIS RESULTADOS</Text>

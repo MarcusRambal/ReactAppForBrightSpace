@@ -1,33 +1,88 @@
-import React, { useState } from "react";
-import { View, Text, StyleSheet, ActivityIndicator, FlatList, TouchableOpacity, Alert } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+//src/features/teacherHome/presentation/screens/TeacherHomeScreen.tsx
+import React, { useState, useCallback } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+  FlatList,
+  TouchableOpacity,
+  Alert,
+} from "react-native";
+import {
+  useNavigation,
+  useFocusEffect,
+} from "@react-navigation/native";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
-import { Portal, Modal, TextInput, Button as PaperButton } from "react-native-paper";
+import {
+  Portal,
+  Modal,
+  TextInput,
+  Button as PaperButton,
+} from "react-native-paper";
 
 import { useAuth } from "@/src/features/auth/presentation/context/authContext";
 import { useDI } from "@/src/core/di/diProvider";
 import { TOKENS } from "@/src/core/di/tokens";
+
 import { ICursoRepository } from "@/src/features/cursos/domain/repositories/ICursoRepository";
 import { useTeacherHomeController } from "../context/useTeacherHomeController";
 
 import { useGrupoImportController } from "@/src/features/grupo/presentation/context/useGrupoImportController";
 import { IGrupoRepository } from "@/src/features/grupo/domain/repositories/IGrupoRepository";
 
+// 🔥 NUEVO
+import { ReporteController } from "@/src/features/reportes/presentation/context/ReporteController";
+import { IReporteSource } from "@/src/features/reportes/data/dataSources/IReporteSource";
+import { useTeacherAlertsController } from "../context/useTeacherAlertsController";
+
 export default function TeacherHomeScreen() {
   const { logout } = useAuth();
   const navigation = useNavigation<any>();
-  
+
   const di = useDI();
+
   const cursoRepo = di.resolve<ICursoRepository>(TOKENS.CursoRepo);
   const grupoRepo = di.resolve<IGrupoRepository>(TOKENS.GrupoRepo);
 
-  // Instanciamos el controlador del Home (ya sin manejarSubidaCSV)
-  const { cursos, isLoading, crearCurso, eliminarCurso } = useTeacherHomeController(cursoRepo);
-  
-  // Instanciamos el controlador para importar CSV
-  const { isImporting, importProgress, importarCSV, actualizarCursoConNuevoCSV } = useGrupoImportController(grupoRepo, cursoRepo);
+  // 🔥 NUEVO: Reportes
+  const reporteSource = di.resolve<IReporteSource>(TOKENS.ReporteSource);
 
-  // Estados para el Modal de Crear Curso
+  const reporteController = di.resolve<ReporteController>(
+    TOKENS.ReporteController
+  );
+
+  // Controlador cursos
+  const {
+    cursos,
+    isLoading,
+    crearCurso,
+    eliminarCurso,
+    fetchCursos,
+  } = useTeacherHomeController(cursoRepo);
+
+  // 🔥 REFRESH AL ENTRAR (IMPORTANTE)
+  useFocusEffect(
+    useCallback(() => {
+      fetchCursos();
+    }, [])
+  );
+
+  // Controlador CSV
+  const {
+    isImporting,
+    importProgress,
+    importarCSV,
+    actualizarCursoConNuevoCSV,
+  } = useGrupoImportController(grupoRepo, cursoRepo);
+
+  // 🔥 NUEVO: Alertas
+  const {
+    cantidadAlertas,
+    isLoading: loadingAlertas,
+  } = useTeacherAlertsController(cursos, reporteController);
+
+  // Modal
   const [modalVisible, setModalVisible] = useState(false);
   const [nuevoNombre, setNuevoNombre] = useState("");
   const [nuevoNRC, setNuevoNRC] = useState("");
@@ -38,16 +93,24 @@ export default function TeacherHomeScreen() {
       `¿Estás seguro de que deseas eliminar "${nombreCurso}"? Se perderán todos sus grupos y evaluaciones.`,
       [
         { text: "Cancelar", style: "cancel" },
-        { text: "Eliminar", style: "destructive", onPress: () => eliminarCurso(idCurso) }
+        {
+          text: "Eliminar",
+          style: "destructive",
+          onPress: () => eliminarCurso(idCurso),
+        },
       ]
     );
   };
 
   const handleCrearCursoSubmit = () => {
     if (!nuevoNombre.trim() || !nuevoNRC.trim()) {
-      Alert.alert("Campos incompletos", "Por favor ingresa el nombre y el NRC del curso.");
+      Alert.alert(
+        "Campos incompletos",
+        "Por favor ingresa el nombre y el NRC del curso."
+      );
       return;
     }
+
     crearCurso(nuevoNRC.trim(), nuevoNombre.trim());
     setModalVisible(false);
     setNuevoNombre("");
@@ -65,36 +128,56 @@ export default function TeacherHomeScreen() {
           <Text style={styles.title}>Hola, Profesor</Text>
         </View>
         <TouchableOpacity onPress={logout} style={styles.logoutBtn}>
-          <FontAwesome6 name="arrow-right-from-bracket" size={22} color="#1A365D" />
+          <FontAwesome6
+            name="arrow-right-from-bracket"
+            size={22}
+            color="#1A365D"
+          />
         </TouchableOpacity>
       </View>
 
-      {/* RESUMEN ACADÉMICO */}
+      {/* RESUMEN */}
       <View style={styles.resumenCard}>
         <Text style={styles.resumenTitle}>RESUMEN ACADÉMICO</Text>
+
         <View style={styles.resumenStatsRow}>
           <View style={styles.statBox}>
             <Text style={styles.statLabel}>Mis Cursos</Text>
             <Text style={styles.statValue}>{cursos.length}</Text>
           </View>
-          <View style={styles.statBox}>
+
+          {/* 🔥 ALERTAS DINÁMICAS */}
+          <TouchableOpacity
+            style={styles.statBox}
+            onPress={() => navigation.navigate("TeacherAlerts")}
+          >
             <Text style={styles.statLabel}>Alertas</Text>
-            <Text style={styles.statValue}>99</Text>
-          </View>
+
+            <Text style={styles.statValue}>
+              {loadingAlertas ? "..." : cantidadAlertas}
+            </Text>
+          </TouchableOpacity>
         </View>
       </View>
 
       <Text style={styles.sectionTitle}>Mis Cursos Reales</Text>
 
-      {/* LISTA DE CURSOS */}
+      {/* LISTA */}
       {isLoading ? (
         <View style={styles.center}>
           <ActivityIndicator size="large" color="#E6C363" />
         </View>
       ) : cursos.length === 0 ? (
         <View style={styles.emptyState}>
-          <FontAwesome6 name="book-open" size={40} color="#ccc" style={{ marginBottom: 12 }} />
-          <Text style={styles.emptyText}>No tienes cursos asignados.</Text>
+          <FontAwesome6
+            name="book-open"
+            size={40}
+            color="#ccc"
+            style={{ marginBottom: 12 }}
+          />
+          <Text style={styles.emptyText}>
+            No tienes cursos asignados.
+          </Text>
         </View>
       ) : (
         <FlatList
@@ -107,51 +190,101 @@ export default function TeacherHomeScreen() {
 
             return (
               <View style={styles.card}>
-                <View style={[styles.cardTop, { backgroundColor: color }]} />
-                
+                <View
+                  style={[styles.cardTop, { backgroundColor: color }]}
+                />
+
                 <View style={styles.cardContent}>
                   <View style={styles.cardHeaderRow}>
-                    <TouchableOpacity 
+                    <TouchableOpacity
                       style={styles.courseInfo}
-                      onPress={() => navigation.navigate("TeacherCategories", { curso: item })}
+                      onPress={() =>
+                        navigation.navigate("TeacherCategories", {
+                          curso: item,
+                        })
+                      }
                     >
-                      <Text style={styles.courseTitle}>{item.nombre}</Text>
-                      <Text style={styles.courseId}>Código: {item.id}</Text>
+                      <Text style={styles.courseTitle}>
+                        {item.nombre}
+                      </Text>
+                      <Text style={styles.courseId}>
+                        Código: {item.id}
+                      </Text>
                     </TouchableOpacity>
-                    
-                    <TouchableOpacity onPress={() => handleEliminar(item.id, item.nombre)} style={styles.deleteBtn}>
-                      <FontAwesome6 name="trash-can" size={20} color="#D32F2F" />
+
+                    <TouchableOpacity
+                      onPress={() =>
+                        handleEliminar(item.id, item.nombre)
+                      }
+                      style={styles.deleteBtn}
+                    >
+                      <FontAwesome6
+                        name="trash-can"
+                        size={20}
+                        color="#D32F2F"
+                      />
                     </TouchableOpacity>
                   </View>
 
-                  {/* 🔥 BOTONES DE CSV CON ESTADOS DE CARGA */}
+                  {/* CSV */}
                   {isImporting ? (
-                    <TouchableOpacity style={[styles.csvBtn, styles.csvBtnGold]} disabled>
-                       <ActivityIndicator size="small" color="#C49B3E" style={{ marginRight: 8 }}/>
-                       <Text style={styles.csvBtnGoldText} numberOfLines={1}>{importProgress || "Procesando..."}</Text>
+                    <TouchableOpacity
+                      style={[styles.csvBtn, styles.csvBtnGold]}
+                      disabled
+                    >
+                      <ActivityIndicator
+                        size="small"
+                        color="#C49B3E"
+                        style={{ marginRight: 8 }}
+                      />
+                      <Text style={styles.csvBtnGoldText}>
+                        {importProgress || "Procesando..."}
+                      </Text>
                     </TouchableOpacity>
                   ) : (
                     <>
-                      <TouchableOpacity style={[styles.csvBtn, styles.csvBtnGold]} onPress={() => importarCSV(item.id)}>
-                        <FontAwesome6 name="file-arrow-up" size={14} color="#C49B3E" style={{ marginRight: 8 }} />
-                        <Text style={styles.csvBtnGoldText}>Subir grupos por primera vez</Text>
+                      <TouchableOpacity
+                        style={[styles.csvBtn, styles.csvBtnGold]}
+                        onPress={() => importarCSV(item.id)}
+                      >
+                        <FontAwesome6
+                          name="file-arrow-up"
+                          size={14}
+                          color="#C49B3E"
+                          style={{ marginRight: 8 }}
+                        />
+                        <Text style={styles.csvBtnGoldText}>
+                          Subir grupos por primera vez
+                        </Text>
                       </TouchableOpacity>
 
-                      <TouchableOpacity 
-                        style={[styles.csvBtn, styles.csvBtnGray]} 
+                      <TouchableOpacity
+                        style={[styles.csvBtn, styles.csvBtnGray]}
                         onPress={() => {
                           Alert.alert(
                             "Actualizar Grupos",
                             "Esto borrará la lista actual y cargará la del nuevo archivo. ¿Continuar?",
                             [
                               { text: "Cancelar", style: "cancel" },
-                              { text: "Sí, actualizar", style: "destructive", onPress: () => actualizarCursoConNuevoCSV(item.id) }
+                              {
+                                text: "Sí, actualizar",
+                                style: "destructive",
+                                onPress: () =>
+                                  actualizarCursoConNuevoCSV(item.id),
+                              },
                             ]
                           );
                         }}
                       >
-                        <FontAwesome6 name="rotate" size={14} color="#777" style={{ marginRight: 8 }} />
-                        <Text style={styles.csvBtnGrayText}>Actualizar lista (.csv)</Text>
+                        <FontAwesome6
+                          name="rotate"
+                          size={14}
+                          color="#777"
+                          style={{ marginRight: 8 }}
+                        />
+                        <Text style={styles.csvBtnGrayText}>
+                          Actualizar lista (.csv)
+                        </Text>
                       </TouchableOpacity>
                     </>
                   )}
@@ -162,25 +295,31 @@ export default function TeacherHomeScreen() {
         />
       )}
 
-      {/* BOTÓN FLOTANTE (+) CONECTADO AL MODAL */}
-      <TouchableOpacity style={styles.fab} onPress={() => setModalVisible(true)}>
+      {/* FAB */}
+      <TouchableOpacity
+        style={styles.fab}
+        onPress={() => setModalVisible(true)}
+      >
         <FontAwesome6 name="plus" size={24} color="#fff" />
       </TouchableOpacity>
 
-      {/* MODAL PARA AÑADIR CURSO */}
+      {/* MODAL */}
       <Portal>
-        <Modal visible={modalVisible} onDismiss={() => setModalVisible(false)} contentContainerStyle={styles.modalContainer}>
+        <Modal
+          visible={modalVisible}
+          onDismiss={() => setModalVisible(false)}
+          contentContainerStyle={styles.modalContainer}
+        >
           <Text style={styles.modalTitle}>Añadir Nuevo Curso</Text>
-          
+
           <TextInput
-            label="Nombre del Curso (ej. Programación Móvil)"
+            label="Nombre del Curso"
             value={nuevoNombre}
             onChangeText={setNuevoNombre}
             mode="outlined"
             style={{ marginBottom: 15 }}
-            activeOutlineColor="#1A365D"
           />
-          
+
           <TextInput
             label="Código / NRC"
             value={nuevoNRC}
@@ -188,20 +327,19 @@ export default function TeacherHomeScreen() {
             mode="outlined"
             keyboardType="numeric"
             style={{ marginBottom: 25 }}
-            activeOutlineColor="#1A365D"
           />
 
           <View style={styles.modalButtons}>
-            <PaperButton mode="text" onPress={() => setModalVisible(false)} textColor="#777">
+            <PaperButton onPress={() => setModalVisible(false)}>
               Cancelar
             </PaperButton>
-            <PaperButton mode="contained" onPress={handleCrearCursoSubmit} buttonColor="#1A365D">
+
+            <PaperButton onPress={handleCrearCursoSubmit}>
               Crear Curso
             </PaperButton>
           </View>
         </Modal>
       </Portal>
-
     </View>
   );
 }
@@ -237,7 +375,7 @@ const styles = StyleSheet.create({
   csvBtnGray: { borderColor: "#bbb", backgroundColor: "#fff", marginBottom: 0 },
   csvBtnGrayText: { color: "#777", fontWeight: "500", fontSize: 14 },
   fab: { position: "absolute", bottom: 30, right: 20, width: 60, height: 60, borderRadius: 30, backgroundColor: "#C49B3E", justifyContent: "center", alignItems: "center", elevation: 5 },
-  
+
   // Estilos del Modal
   modalContainer: { backgroundColor: "white", padding: 20, margin: 20, borderRadius: 12 },
   modalTitle: { fontSize: 20, fontWeight: "bold", color: "#1A365D", marginBottom: 20 },
