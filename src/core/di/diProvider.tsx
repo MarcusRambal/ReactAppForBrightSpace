@@ -23,6 +23,7 @@ import { ReporteController } from "@/src/features/reportes/presentation/context/
 
 import { LocalPreferencesAsyncStorage } from "@/src/core/LocalPreferencesAsyncStorage";
 import { Container } from "./container";
+import { LocalCursoCacheSource } from "@/src/features/cursos/data/dataSources/LocalCursoCacheSource";
 
 const DIContext = createContext<Container | null>(null);
 
@@ -42,12 +43,18 @@ export function DIProvider({ children }: { children: React.ReactNode }) {
     const prefs = LocalPreferencesAsyncStorage.getInstance();
     c.register(TOKENS.LocalPreferences, prefs);
 
-    // 📚 CURSOS
-    const cursoDS = new CursoSourceService(prefs, authDS);
-    const cursoRepo = new CursoRepository(cursoDS);
+// 📚 CURSOS
+        const cursoDS = new CursoSourceService(
+            prefs,
+            authDS
+        );
 
-    c.register(TOKENS.CursoSource, cursoDS)
-     .register(TOKENS.CursoRepo, cursoRepo);
+        // 🔥 Instanciamos el Caché y se lo pasamos al Repositorio
+        const cursoCache = new LocalCursoCacheSource(prefs);
+        const cursoRepo = new CursoRepository(cursoDS, cursoCache);
+
+        c.register(TOKENS.CursoSource, cursoDS)
+         .register(TOKENS.CursoRepo, cursoRepo);
 
     // 📝 EVALUACIONES
     const evaluacionDS = new EvaluacionSourceService(prefs, authDS);
