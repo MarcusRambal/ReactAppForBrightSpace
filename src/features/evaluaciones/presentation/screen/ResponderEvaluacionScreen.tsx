@@ -6,6 +6,8 @@ import {
     StyleSheet,
     ActivityIndicator,
     TouchableOpacity,
+    Platform,
+    StatusBar,
 } from "react-native";
 import { useRoute, useNavigation } from "@react-navigation/native";
 
@@ -178,11 +180,11 @@ export default function ResponderEvaluacionScreen() {
 // ===============================
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
-        backgroundColor: "#F4F5EF",
-        padding: 20,
-    },
-
+    flex: 1,
+    backgroundColor: "#F4F5EF",
+    padding: 20,
+    paddingTop: Platform.OS === "android" ? (StatusBar.currentHeight ?? 0) + 18 : 44,
+},
     center: {
         flex: 1,
         justifyContent: "center",

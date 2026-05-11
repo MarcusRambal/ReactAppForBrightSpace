@@ -13,6 +13,7 @@ import {
   Switch,
   Alert,
   Platform,
+  StatusBar,
 } from "react-native";
 
 import { useRoute, useNavigation, useFocusEffect } from "@react-navigation/native";
@@ -64,7 +65,7 @@ export default function TeacherCategoriesScreen() {
 
   return (
     <View style={styles.container}>
-      <Appbar.Header style={{ backgroundColor: "#F4F5EF" }}>
+      <Appbar.Header style={styles.appbar}>
         <Appbar.BackAction onPress={() => navigation.goBack()} color="#1A365D" />
         <Appbar.Content
           title="Categorías"
@@ -284,6 +285,10 @@ function CreateEvaluationModal({
 //
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#F4F5EF" },
+  appbar: {
+  backgroundColor: "#F4F5EF",
+  marginTop: Platform.OS === "android" ? StatusBar.currentHeight ?? 0 : 20,
+},
   content: { padding: 20, flex: 1 },
 
   courseTitle: {

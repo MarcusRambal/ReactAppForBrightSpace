@@ -1,6 +1,6 @@
 // src/features/studentHome/presentation/screens/StudentCourseDetailsScreen.tsx
 import React from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Platform, StatusBar } from "react-native";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import { Appbar } from "react-native-paper";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";import { CursoMatriculado } from "@/src/features/cursos/domain/entities/CursoMatriculado";
@@ -11,7 +11,7 @@ export default function StudentCourseDetailsScreen() {
 
   return (
     <View style={styles.container}>
-        <Appbar.Header style={{ backgroundColor: "#fff" }}>
+        <Appbar.Header style={styles.appbar}> 
             <Appbar.BackAction onPress={() => navigation.goBack()} color="#1A365D" />
             <Appbar.Content 
                 title="Detalles del Curso" 
@@ -49,6 +49,10 @@ export default function StudentCourseDetailsScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#F4F5EF" },
+  appbar: {
+  backgroundColor: "#fff",
+  marginTop: Platform.OS === "android" ? StatusBar.currentHeight ?? 0 : 20,
+},
   scrollContent: { padding: 20 },
   courseHeader: { backgroundColor: "#E6C363", padding: 20, borderRadius: 15, marginBottom: 30 },
   courseName: { color: "#fff", fontSize: 24, fontWeight: "bold" },

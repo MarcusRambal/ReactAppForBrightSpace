@@ -1,5 +1,14 @@
 import React from "react";
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  ActivityIndicator,
+  TouchableOpacity,
+  Platform,
+  StatusBar,
+} from "react-native";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import { Appbar } from "react-native-paper";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
@@ -28,7 +37,7 @@ export default function TeacherCategoryDetailsScreen() {
 
   return (
     <View style={styles.container}>
-      <Appbar.Header style={{ backgroundColor: "#F4F5EF" }}>
+      <Appbar.Header style={styles.appbar}>
         <Appbar.BackAction onPress={() => navigation.goBack()} color="#1A365D" />
         <Appbar.Content title={categoria.nombre} titleStyle={{ color: "#1A365D", fontWeight: "bold", fontSize: 18 }} />
       </Appbar.Header>
@@ -91,6 +100,10 @@ export default function TeacherCategoryDetailsScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#F4F5EF" },
+  appbar: {
+  backgroundColor: "#F4F5EF",
+  marginTop: Platform.OS === "android" ? StatusBar.currentHeight ?? 0 : 20,
+},
   scrollContent: { padding: 20 },
   sectionTitle: { fontSize: 20, fontWeight: "bold", color: "#1A365D", marginBottom: 15 },
   spacer: { height: 30 },

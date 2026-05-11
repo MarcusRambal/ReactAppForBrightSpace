@@ -9,6 +9,8 @@ import {
     ActivityIndicator,
     FlatList,
     TouchableOpacity,
+    Platform,
+    StatusBar,
 } from "react-native";
 import { useRoute, useNavigation } from "@react-navigation/native";
 
@@ -173,11 +175,11 @@ export default function EvaluacionDetailScreen() {
 // ===============================
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
-        padding: 20,
-        backgroundColor: "#F4F5EF",
-    },
-
+    flex: 1,
+    backgroundColor: "#F4F5EF",
+    padding: 20,
+    paddingTop: Platform.OS === "android" ? (StatusBar.currentHeight ?? 0) + 18 : 44,
+},
     title: {
         fontSize: 22,
         fontWeight: "bold",

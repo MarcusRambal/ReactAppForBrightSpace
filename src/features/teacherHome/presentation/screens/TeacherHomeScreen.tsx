@@ -1,5 +1,15 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, ActivityIndicator, FlatList, TouchableOpacity, Alert } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+  FlatList,
+  TouchableOpacity,
+  Alert,
+  Platform,
+  StatusBar,
+} from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import { Portal, Modal, TextInput, Button as PaperButton } from "react-native-paper";
@@ -207,7 +217,12 @@ export default function TeacherHomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#F4F5EF", padding: 20 },
+  container: {
+  flex: 1,
+  backgroundColor: "#F4F5EF",
+  padding: 20,
+  paddingTop: Platform.OS === "android" ? (StatusBar.currentHeight ?? 0) + 18 : 44,
+},
   center: { flex: 1, justifyContent: "center", alignItems: "center" },
   header: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 10, marginBottom: 20 },
   headerLeft: { flexDirection: "row", alignItems: "center" },

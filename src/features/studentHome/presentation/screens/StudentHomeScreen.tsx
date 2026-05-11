@@ -7,6 +7,8 @@ import {
   ActivityIndicator,
   FlatList,
   TouchableOpacity,
+  Platform,
+  StatusBar,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 
@@ -170,10 +172,11 @@ const CourseCard = ({
 //
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: "#F4F5EF",
-    padding: 20,
-  },
+  flex: 1,
+  backgroundColor: "#F4F5EF",
+  padding: 20,
+  paddingTop: Platform.OS === "android" ? (StatusBar.currentHeight ?? 0) + 18 : 44,
+},
 
   center: {
     flex: 1,
