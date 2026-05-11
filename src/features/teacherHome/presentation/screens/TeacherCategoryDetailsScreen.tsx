@@ -1,5 +1,14 @@
 import React from "react";
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  ActivityIndicator,
+  TouchableOpacity,
+  Platform,
+  StatusBar,
+} from "react-native";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import { Appbar } from "react-native-paper";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
