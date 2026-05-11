@@ -6,7 +6,7 @@ import GroupDetailsScreen from "./features/studentHome/presentation/screens/Grou
 import StudentPendingEvaluationsScreen from "./features/studentHome/presentation/screens/StudentPendingEvaluationsScreen";
 import EvaluacionDetailScreen from "./features/studentHome/presentation/screens/EvaluacionDetailScreen";
 import ResponderEvaluacionScreen from "./features/evaluaciones/presentation/screen/ResponderEvaluacionScreen";
-
+import StudentReportScreen from "@/src/features/studentHome/presentation/screens/StudentReportScreen";
 const Stack = createStackNavigator();
 
 export default function StudentStack() {
@@ -18,6 +18,7 @@ export default function StudentStack() {
       <Stack.Screen name="StudentPendingEvaluationsScreen" component={StudentPendingEvaluationsScreen} />
       <Stack.Screen name="EvaluacionDetail" component={EvaluacionDetailScreen} />
       <Stack.Screen name="ResponderEvaluacion" component={ResponderEvaluacionScreen} />
+      <Stack.Screen name="StudentReport" component={StudentReportScreen} />
     </Stack.Navigator>
   );
 }

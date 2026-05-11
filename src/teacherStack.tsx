@@ -6,7 +6,8 @@ import TeacherHomeScreen from "./features/teacherHome/presentation/screens/Teach
 import TeacherCategoriesScreen from "./features/teacherHome/presentation/screens/TeacherCategoriesScreen";
 //import TeacherCategoriesScreen from "./features/teacherHome/presentation/screens/TeacherCourseDetailsScreen";
 import TeacherCategoryDetailsScreen from "./features/teacherHome/presentation/screens/TeacherCategoryDetailsScreen"; // Asumiendo que la guardaste aquí también
-
+import TeacherReportScreen from "./features/teacherHome/presentation/screens/TeacherReportScreen";
+import TeacherAlerts from "./features/teacherHome/presentation/screens/TeacherAlertsScreen"
 const Stack = createStackNavigator();
 
 export default function TeacherStack() {
@@ -15,6 +16,9 @@ export default function TeacherStack() {
       <Stack.Screen name="TeacherHome" component={TeacherHomeScreen} />
       <Stack.Screen name="TeacherCategories" component={TeacherCategoriesScreen} />
       <Stack.Screen name="TeacherCategoryDetails" component={TeacherCategoryDetailsScreen} />
+      <Stack.Screen name="TeacherReport" component={TeacherReportScreen} />
+      <Stack.Screen name="TeacherAlerts" component={TeacherAlerts} />
+
     </Stack.Navigator>
   );
 }

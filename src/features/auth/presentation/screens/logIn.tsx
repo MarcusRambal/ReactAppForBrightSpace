@@ -63,6 +63,7 @@ export default function LogIn({ navigation }: { navigation: any }) {
         <Text variant="headlineMedium" style={styles.title}>Bienvenido</Text>
 
         <TextInput
+          testID="email-input"
           label="Email"
           value={email}
           onChangeText={setEmail}
@@ -78,6 +79,7 @@ export default function LogIn({ navigation }: { navigation: any }) {
         <HelperText type="error" visible={!!errors.email}>{errors.email}</HelperText>
 
         <TextInput
+          testID="password-input"
           ref={passwordRef}
           label="Password"
           value={password}
@@ -96,6 +98,7 @@ export default function LogIn({ navigation }: { navigation: any }) {
     
 
         <Button
+          testID="submit-login-button"
           mode="contained"
           onPress={handleSubmit}
           loading={loading}
@@ -107,7 +110,7 @@ export default function LogIn({ navigation }: { navigation: any }) {
           Log In
         </Button>
 
-        <Button mode="text" onPress={() => navigation.navigate("SignUp")} style={{marginTop: 10}} textColor="gray" >
+        <Button  testID="go-to-signup-button" mode="text" onPress={() => navigation.navigate("SignUp")} style={{marginTop: 10}} textColor="gray" >
           Sin cuenta? Crea una aquí
         </Button>
         </View>

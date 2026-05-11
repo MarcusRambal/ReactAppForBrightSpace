@@ -78,6 +78,7 @@ export default function SignUp({ navigation }: { navigation: any }) {
           <Text variant="headlineMedium" style={styles.title}>Crear Cuenta</Text>
 
           <TextInput
+            testID="name-input"
             label="Nombre"
             value={name}
             onChangeText={setName}
@@ -91,6 +92,7 @@ export default function SignUp({ navigation }: { navigation: any }) {
           <HelperText type="error" visible={!!errors.name}>{errors.name}</HelperText>
 
           <TextInput
+            testID="email-input"
             label="Email"
             value={email}
             onChangeText={setEmail}
@@ -106,6 +108,7 @@ export default function SignUp({ navigation }: { navigation: any }) {
           <HelperText type="error" visible={!!errors.email}>{errors.email}</HelperText>
 
           <TextInput
+            testID="password-input"
             label="Contraseña"
             value={password}
             onChangeText={setPassword}
@@ -126,6 +129,7 @@ export default function SignUp({ navigation }: { navigation: any }) {
           <HelperText type="error" visible={!!errors.password}>{errors.password}</HelperText>
 
           <Button
+            testID="submit-signup-button"
             mode="contained"
             onPress={handleSubmit}
             loading={loading}
@@ -137,7 +141,7 @@ export default function SignUp({ navigation }: { navigation: any }) {
             Registrarse
           </Button>
 
-          <Button mode="text" onPress={() => navigation.navigate("Login")} style={{marginTop: 10}} textColor="gray">
+          <Button testID="back-to-login-button" mode="text" onPress={() => navigation.navigate("Login")} style={{marginTop: 10}} textColor="gray">
             ¿Ya tienes cuenta? Inicia sesión
           </Button>
         </View>
