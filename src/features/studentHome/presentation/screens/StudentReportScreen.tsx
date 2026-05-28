@@ -139,7 +139,7 @@ export default function StudentReportScreen() {
     // 🔒 BLOQUEADO
     // ===============================
     const renderBloqueado = () => (
-        <View style={styles.center}>
+        <View style={styles.center} testID="locked-report-container">
             <Text style={styles.lockTitle}>Calificaciones Ocultas</Text>
             <Text style={styles.lockText}>
                 El profesor ha marcado esta evaluación como privada.
@@ -151,7 +151,7 @@ export default function StudentReportScreen() {
     // 📭 VACÍO
     // ===============================
     const renderEmpty = () => (
-        <View style={styles.center}>
+        <View style={styles.center} testID="empty-report-container">
             <Text style={styles.emptyTitle}>Aún no hay resultados</Text>
             <Text style={styles.emptyText}>
                 Tus resultados aparecerán aquí cuando te evalúen.
@@ -178,6 +178,7 @@ export default function StudentReportScreen() {
             <FlatList
                 data={data}
                 keyExtractor={(item) => item.label}
+                testID="report-items-list"
                 ListHeaderComponent={
                     <View style={styles.headerCard}>
                         <Text style={styles.evalName}>{nombreEvaluacion}</Text>
@@ -211,7 +212,7 @@ export default function StudentReportScreen() {
     if (esPrivada) return renderBloqueado();
     if (!miReporte) return renderEmpty();
 
-    return <View style={styles.container}>{renderReporte()}</View>;
+    return <View style={styles.container} testID="student-report-screen">{renderReporte()}</View>;
 }
 
 // ===============================

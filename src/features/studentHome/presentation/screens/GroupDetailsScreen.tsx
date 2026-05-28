@@ -86,11 +86,12 @@ export default function GroupDetailsScreen() {
   const incompletas = evaluacionesController.evaluacionesIncompletas;
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container} testID="group-details-screen">
       <Appbar.Header style={{ backgroundColor: "#F4F5EF" }}>
         <Appbar.BackAction
           onPress={() => navigation.goBack()}
           color="#1A365D"
+          testID="appbar-back-button"
         />
         <Appbar.Content
           title="Detalles del Grupo"
@@ -103,7 +104,7 @@ export default function GroupDetailsScreen() {
         <Text style={styles.sectionTitle}>Evaluaciones</Text>
 
         {evaluaciones.length === 0 ? (
-          <View style={styles.emptyState}>
+          <View style={styles.emptyState} testID="empty-evaluations-container">
             <FontAwesome6 name="clipboard-list" size={40} color="#ccc" />
             <Text style={styles.emptyText}>
               No hay evaluaciones disponibles.
@@ -117,6 +118,7 @@ export default function GroupDetailsScreen() {
               <TouchableOpacity
                 key={index}
                 style={styles.evalCard}
+                testID={`evaluation-card-${ev.id}`}
                 onPress={() =>
                   navigation.navigate("EvaluacionDetail", {
                     evaluacion: ev,
@@ -163,6 +165,7 @@ export default function GroupDetailsScreen() {
                   name={completa ? "check-circle" : "chevron-right"}
                   size={18}
                   color={completa ? "green" : "#1A365D"}
+                  testID={completa ? `status-icon-complete-${ev.id}` : `status-icon-pending-${ev.id}`}
                 />
               </TouchableOpacity>
             );
@@ -177,7 +180,7 @@ export default function GroupDetailsScreen() {
         {isLoading ? (
           <ActivityIndicator size="large" color="#1A365D" />
         ) : companeros.length === 0 ? (
-          <View style={styles.emptyState}>
+          <View style={styles.emptyState} testID="empty-companions-container">
             <FontAwesome6 name="users-slash" size={40} color="#ccc" />
             <Text style={styles.emptyText}>
               No hay compañeros asignados.
@@ -185,7 +188,7 @@ export default function GroupDetailsScreen() {
           </View>
         ) : (
           companeros.map((correo, index) => (
-            <View key={index} style={styles.userCard}>
+            <View key={index} style={styles.userCard} testID={`companion-row-${correo}`}>
               <View style={styles.avatar}>
                 <FontAwesome6 name="user" size={20} color="#1A365D" />
               </View>

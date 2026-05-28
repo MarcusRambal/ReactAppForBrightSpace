@@ -40,19 +40,20 @@ export default function StudentPendingEvaluationsScreen() {
   // 🎨 UI
   // ===============================
   return (
-    <View style={styles.container}>
+    <View style={styles.container} testID="pending-evaluations-screen">
       <Text style={styles.title}>Evaluaciones Pendientes</Text>
 
       {evaluacionesController.isLoading ? (
         <ActivityIndicator size="large" />
       ) : evaluaciones.length === 0 ? (
-        <Text style={styles.empty}>
+        <Text style={styles.empty} testID="empty-evaluations-message">
           No tienes evaluaciones pendientes
         </Text>
       ) : (
         <FlatList
           data={evaluaciones}
           keyExtractor={(item) => item.id}
+          testID="evaluations-list"
           renderItem={({ item }) => {
             // ✅ GRUPOS REALES (SIN SIMULACIÓN)
             const grupo =
@@ -63,6 +64,7 @@ export default function StudentPendingEvaluationsScreen() {
             return (
               <TouchableOpacity
                 style={styles.card}
+                testID={`evaluation-card-${item.id}`}
                 onPress={() => {
                   navigation.navigate("EvaluacionDetail", {
                     evaluacion: item,

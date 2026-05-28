@@ -10,7 +10,7 @@ export default function StudentCourseDetailsScreen() {
   const { cursoMatriculado } = route.params as { cursoMatriculado: CursoMatriculado };
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container} testID="student-course-details-screen">
         <Appbar.Header style={styles.appbar}> 
             <Appbar.BackAction onPress={() => navigation.goBack()} color="#1A365D" />
             <Appbar.Content 
@@ -33,6 +33,7 @@ export default function StudentCourseDetailsScreen() {
           <TouchableOpacity
             key={grupo.idCat}
             style={styles.groupCard}
+            testID={`group-card-${grupo.idCat}`}
             onPress={() => navigation.navigate("GroupDetails", { grupo, cursoMatriculado })}
           >
             <View style={styles.groupInfo}>

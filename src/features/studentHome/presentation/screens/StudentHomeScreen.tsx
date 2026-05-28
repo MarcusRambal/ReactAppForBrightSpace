@@ -70,7 +70,7 @@ export default function StudentHomeScreen() {
 
   if (cursos.length === 0) {
     return (
-      <View style={styles.center}>
+      <View style={styles.center} testID="empty-courses-container">
         <Text style={styles.emptyText}>
           Aún no estás inscrito en ningún curso.
         </Text>
@@ -79,22 +79,22 @@ export default function StudentHomeScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container} testID="student-home-screen">
       <View style={styles.header}>
         <Text style={styles.title}>Bienvenido</Text>
-        <TouchableOpacity onPress={logout}>
+        <TouchableOpacity onPress={logout} testID="logout-button">
           <Text style={styles.logout}>Cerrar sesión</Text>
         </TouchableOpacity>
       </View>
 
       {/* 🔥 SUMMARY CARD DINÁMICO */}
-      <View style={styles.summaryCard}>
+      <View style={styles.summaryCard} testID="summary-card">
         <Text style={styles.summaryTitle}>Evaluaciones pendientes</Text>
 
         {evaluacionesController.isLoading ? (
-          <ActivityIndicator size="small" />
+          <ActivityIndicator size="small"  testID="summary-loading-indicator"/>
         ) : (
-          <Text style={styles.summaryValue}>
+          <Text style={styles.summaryValue} testID="summary-tasks-count">
             {evaluacionesController.evaluacionesIncompletas.length} tareas
           </Text>
         )}
@@ -103,6 +103,7 @@ export default function StudentHomeScreen() {
       <FlatList
         data={cursos}
         keyExtractor={(item) => item.curso.id}
+        testID="courses-list"
         renderItem={({ item, index }) => (
           <CourseCard curso={item} index={index} />
         )}
@@ -125,7 +126,7 @@ const CourseCard = ({
   const color = colors[index % colors.length];
 
   return (
-    <View style={styles.card}>
+    <View style={styles.card} testID={`course-card-${curso.curso.id}`}>
       <View style={[styles.cardTop, { backgroundColor: color }]} />
 
       <View style={styles.cardContent}>
@@ -143,6 +144,7 @@ const CourseCard = ({
         {/* 🔥 BOTÓN DETALLES */}
         <TouchableOpacity
           style={styles.button}
+          testID={`btn-course-details-${curso.curso.id}`}
           onPress={() =>
             navigation.navigate("StudentCourseDetails", {
               cursoMatriculado: curso,
@@ -155,6 +157,7 @@ const CourseCard = ({
         {/* 🔥 BOTÓN NUEVO: EVALUACIONES */}
         <TouchableOpacity
           style={[styles.button, { backgroundColor: "#4CAF50" }]}
+          testID={`btn-pending-evaluations-${curso.curso.id}`}
           onPress={() =>
             navigation.navigate("StudentPendingEvaluationsScreen", {
               cursoMatriculado: curso,
