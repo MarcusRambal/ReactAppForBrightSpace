@@ -1,1 +1,2 @@
 - Vídeo con app en RN en modo profe contra app de flutter en modo estudiante: https://youtu.be/Cupqp6NPayA
+- -Video con tests en RN: https://youtu.be/2m092uHFg3I
